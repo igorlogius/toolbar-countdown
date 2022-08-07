@@ -29,6 +29,11 @@ function onChange(evt) {
 			value = el.min
 		}
 	}
+    else if(el.type === 'date') {
+            if(value === "") {
+                value = new Date().toDateInputValue();
+            }
+    }
 
     //console.log(id, value);
 	obj[id] = value;
@@ -51,6 +56,9 @@ function onChange(evt) {
 			}
             else if(el.type === 'date') {
                 el.min = new Date().toDateInputValue();
+                if(val !== ""){
+                    el.value = val;
+                }
             }
 			else{
 				el.value = val;
@@ -60,7 +68,7 @@ function onChange(evt) {
 	}).catch( (err) => {console.error(err);} );
 
 	let el = document.getElementById(id);
-	el.addEventListener('click', onChange);
+	//el.addEventListener('click', onChange);
 	el.addEventListener('focusout', onChange);
 });
 
