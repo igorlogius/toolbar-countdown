@@ -1,0 +1,19 @@
+{
+  "author": "igorlogius",
+  "background": {
+	"scripts": ["background.js"]
+  },
+  "browser_action": {
+	  "default_title": "Edit Countdown Time",
+	  "default_popup": "popup.html"
+  },
+  "description": "Shows a custom countdown in the toolbar",
+  "icons": {
+  },
+  "manifest_version": 2,
+  "name": "Toolbar Countdown",
+  "permissions": [
+    "storage"
+  ],
+  "version": "1.0.0"
+}
