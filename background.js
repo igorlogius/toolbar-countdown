@@ -8,6 +8,18 @@ let enddatestr = "";
 let enddatename = "";
 let tid;
 
+const second = 1000;
+const minute = 60*second;
+const hour = 60*minute;
+const day = 24*hour;
+const week = 7*day;
+
+const value_postfix = new Map();
+value_postfix.set(week, "w");
+value_postfix.set(day, "d");
+value_postfix.set(hour, "h");
+value_postfix.set(minute, "m");
+
 
 async function onStorageChanged(/*changes, area*/) {
         let storeid, tmp;
@@ -58,13 +70,6 @@ function shortTextForNumber (number) {
 }
 
 
-    const value_postfix = new Map();
-    value_postfix.set(60*60*24*7, "w");
-    value_postfix.set(60*60*24, "d");
-    value_postfix.set(60*60, "h");
-    value_postfix.set(60, "m");
-    value_postfix.set(1, "s");
-
 function updateBadge() {
 
     if(enddate < 0 || isNaN(enddate) || enddate < Date.now()){
@@ -79,11 +84,11 @@ function updateBadge() {
     let diffsecs = enddate - Date.now();
 
     for(const [k,v] of value_postfix){
-        const tmp = Math.floor(diffsecs/k/1000);
+        const tmp = Math.floor(diffsecs/k);
         if(tmp > 0){
             browser.browserAction.setBadgeText({ text: v});
             clearTimeout(tid);
-            tid = setTimeout(updateBadge,(60*1000));
+            tid = setTimeout(updateBadge,minute);
             browser.browserAction.setTitle({
                 title: "Name:" + enddatename + "\nEndtime: " + enddatestr
             });
