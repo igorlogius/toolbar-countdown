@@ -43,7 +43,7 @@ function onChange(evt) {
 
 }
 
-[ "enddate" ].map( (id) => {
+[ "enddate", "name" ].map( (id) => {
 
 	browser.storage.local.get(id).then( (obj) => {
 
@@ -68,7 +68,7 @@ function onChange(evt) {
 	}).catch( (err) => {console.error(err);} );
 
 	let el = document.getElementById(id);
-	//el.addEventListener('click', onChange);
+	el.addEventListener('change', onChange);
 	el.addEventListener('focusout', onChange);
 });
 

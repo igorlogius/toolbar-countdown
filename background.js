@@ -3,25 +3,48 @@
 //const manifest = browser.runtime.getManifest();
 //const extname = manifest.name;
 
-let enddate = -1;
+let enddate = NaN;
+let enddatestr = "";
+let enddatename = "";
 let tid;
 
+    const value_postfix = new Map();
+    value_postfix.set(7*60*60*24, "w");
+    value_postfix.set(60*60*24, "d");
+    value_postfix.set(60*60, "h");
+    value_postfix.set(60, "m");
+    value_postfix.set(1, "s");
+
 async function onStorageChanged(/*changes, area*/) {
-        console.log('onStorageChanged');
+        let storeid, tmp;
 		try {
-			const storeid = 'enddate';
-			let tmp = await browser.storage.local.get(storeid);
+			storeid = 'enddate';
+			tmp = await browser.storage.local.get(storeid);
 			if (typeof tmp[storeid] === 'string'){
-                console.log(tmp[storeid]);
                 enddate = Date.parse(tmp[storeid]);
+                enddatestr = tmp[storeid];
                 updateBadge();
 			}
             else{
-                enddate = -1;
+                enddate = NaN;
+                enddatestr = "";
             }
 		}catch(e){
 			console.error(e);
             enddate = -1;
+		}
+		try {
+			storeid = 'name';
+			let tmp = await browser.storage.local.get(storeid);
+			if (typeof tmp[storeid] === 'string'){
+                enddatename = tmp[storeid];
+			}
+            else{
+                enddatename = "";
+            }
+		}catch(e){
+			console.error(e);
+                enddatename = "";
 		}
 }
 
@@ -42,46 +65,34 @@ function shortTextForNumber (number) {
 	}
 }
 
-
 function updateBadge() {
 
-    if(enddate < 0 || enddate < Date.now()){
+    if(enddate < 0 || isNaN(enddate) || enddate < Date.now()){
         browser.browserAction.setBadgeText({ text: "" });
         browser.browserAction.setIcon({
             'imageData': getIconImageData(0)
         });
+        clearTimeout(tid);
         return;
     }
 
-    let diffsecs = parseInt((enddate - Date.now())/1000)
 
-    if(parseInt(diffsecs/60/60/24) > 0){
-        browser.browserAction.setBadgeText({ text: "d" });
-        diffsecs = parseInt(diffsecs/60/60/24);
-        clearTimeout(tid);
-        tid = setTimeout(updateBadge,60*60*24*1000);
-    }else
-    if(parseInt(diffsecs/60/60) > 0){
-        browser.browserAction.setBadgeText({ text: "h" });
-        diffsecs = parseInt(diffsecs/60/60);
-        clearTimeout(tid);
-        tid = setTimeout(updateBadge,60*60*1000);
-    }else
-    if(parseInt(diffsecs/60)  > 0){
-        browser.browserAction.setBadgeText({ text: "m" });
-        diffsecs = parseInt(diffsecs/60);
-        clearTimeout(tid);
-        tid = setTimeout(updateBadge,60*1000);
-    }else{
-        browser.browserAction.setBadgeText({ text: "s" });
-        clearTimeout(tid);
-        tid = setTimeout(updateBadge,1000);
+
+    let diffsecs = enddate - Date.now();
+
+    for(const [k,v] of value_postfix){
+        const tmp = Math.floor(diffsecs/k/1000);
+        if(tmp > 0){
+            browser.browserAction.setBadgeText({ text: v});
+            clearTimeout(tid);
+            tid = setTimeout(updateBadge,k*1000);
+            browser.browserAction.setTitle({ title: "Name:" + enddatename + "\nEndtime: " + enddatestr });
+            browser.browserAction.setIcon({
+                'imageData': getIconImageData(tmp)
+            });
+            break;
+        }
     }
-
-    browser.browserAction.setTitle({ title: diffsecs+"" });
-     browser.browserAction.setIcon({
-            'imageData': getIconImageData(diffsecs)
-        });
 
 }
 
@@ -121,5 +132,5 @@ browser.storage.onChanged.addListener(onStorageChanged);
 //setInterval(updateBadge, 1000);
 updateBadge();
 
-browser.browserAction.setBadgeBackgroundColor({ color: '#fff00090' });
+browser.browserAction.setBadgeBackgroundColor({ color: '#fff00050' });
 
