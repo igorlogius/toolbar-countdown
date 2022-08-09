@@ -14,11 +14,14 @@ const hour = 60*minute;
 const day = 24*hour;
 const week = 7*day;
 
+const valarr = [ week, day, hour, minute, second ];
+
 const value_postfix = new Map();
 value_postfix.set(week, "w");
 value_postfix.set(day, "d");
 value_postfix.set(hour, "h");
 value_postfix.set(minute, "m");
+value_postfix.set(second, "s");
 
 
 async function onStorageChanged(/*changes, area*/) {
@@ -71,8 +74,10 @@ function shortTextForNumber (number) {
 
 
 function updateBadge() {
+    let now = Date.now();
+    console.log(enddate < now, enddate);
 
-    if(enddate < 0 || isNaN(enddate) || enddate < Date.now()){
+    if(enddate < 0 || isNaN(enddate) || enddate < now){
         browser.browserAction.setBadgeText({ text: "" });
         browser.browserAction.setIcon({
             'imageData': getIconImageData(0)
@@ -81,22 +86,43 @@ function updateBadge() {
         return;
     }
 
-    let diffsecs = enddate - Date.now();
 
-    for(const [k,v] of value_postfix){
+    let diffsecs = enddate - now;
+
+    let match = false;
+    for(let i=0;i<valarr.length;i++){
+        const k = valarr[i];
+        const v = value_postfix.get(k);
         const tmp = Math.floor(diffsecs/k);
+        console.log('tmp', tmp);
         if(tmp > 0){
             browser.browserAction.setBadgeText({ text: v});
             clearTimeout(tid);
-            tid = setTimeout(updateBadge,minute);
+            remain = now%k;
+            console.log('remain', remain);
+            if(remain !== 0){
+                tid = setTimeout(updateBadge,remain);
+            }else{
+                const wait = ((tmp > 1) ? k : ((i < valarr.length-1)? valarry[i+1]:k))
+                console.log('wait', wait);
+                tid = setTimeout(updateBadge, wait );
+            }
             browser.browserAction.setTitle({
                 title: "Name:" + enddatename + "\nEndtime: " + enddatestr
             });
             browser.browserAction.setIcon({
                 'imageData': getIconImageData(tmp)
             });
+            match = true;
             break;
         }
+    }
+    if(!match){
+        browser.browserAction.setBadgeText({ text: "" });
+        browser.browserAction.setIcon({
+            'imageData': getIconImageData(0)
+        });
+        clearTimeout(tid);
     }
 
 }
