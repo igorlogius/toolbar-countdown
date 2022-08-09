@@ -8,12 +8,6 @@ let enddatestr = "";
 let enddatename = "";
 let tid;
 
-    const value_postfix = new Map();
-    value_postfix.set(7*60*60*24, "w");
-    value_postfix.set(60*60*24, "d");
-    value_postfix.set(60*60, "h");
-    value_postfix.set(60, "m");
-    value_postfix.set(1, "s");
 
 async function onStorageChanged(/*changes, area*/) {
         let storeid, tmp;
@@ -48,8 +42,6 @@ async function onStorageChanged(/*changes, area*/) {
 		}
 }
 
-
-
 function shortTextForNumber (number) {
 	if (number < 1000) {
 		return number.toString()
@@ -65,6 +57,14 @@ function shortTextForNumber (number) {
 	}
 }
 
+
+    const value_postfix = new Map();
+    value_postfix.set(60*60*24*7, "w");
+    value_postfix.set(60*60*24, "d");
+    value_postfix.set(60*60, "h");
+    value_postfix.set(60, "m");
+    value_postfix.set(1, "s");
+
 function updateBadge() {
 
     if(enddate < 0 || isNaN(enddate) || enddate < Date.now()){
@@ -76,8 +76,6 @@ function updateBadge() {
         return;
     }
 
-
-
     let diffsecs = enddate - Date.now();
 
     for(const [k,v] of value_postfix){
@@ -85,8 +83,10 @@ function updateBadge() {
         if(tmp > 0){
             browser.browserAction.setBadgeText({ text: v});
             clearTimeout(tid);
-            tid = setTimeout(updateBadge,k*1000);
-            browser.browserAction.setTitle({ title: "Name:" + enddatename + "\nEndtime: " + enddatestr });
+            tid = setTimeout(updateBadge,(60*1000));
+            browser.browserAction.setTitle({
+                title: "Name:" + enddatename + "\nEndtime: " + enddatestr
+            });
             browser.browserAction.setIcon({
                 'imageData': getIconImageData(tmp)
             });
