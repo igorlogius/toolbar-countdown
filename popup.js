@@ -69,6 +69,8 @@ function onChange(evt) {
 
 	let el = document.getElementById(id);
 	el.addEventListener('change', onChange);
-	el.addEventListener('focusout', onChange);
+    if(el.type === 'text'){
+	    el.addEventListener('keyup', onChange);
+    }
 });
 

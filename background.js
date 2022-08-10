@@ -12,17 +12,16 @@ const second = 1000;
 const minute = 60*second;
 const hour = 60*minute;
 const day = 24*hour;
-const week = 7*day;
+//const week = 7*day;
 
-const valarr = [ week, day, hour, minute, second ];
+const valarr = [ /* week,*/ day, hour, minute, second ];
 
 const value_postfix = new Map();
-value_postfix.set(week, "w");
+//value_postfix.set(week, "w");
 value_postfix.set(day, "d");
 value_postfix.set(hour, "h");
 value_postfix.set(minute, "m");
 value_postfix.set(second, "s");
-
 
 async function onStorageChanged(/*changes, area*/) {
         let storeid, tmp;
@@ -72,12 +71,14 @@ function shortTextForNumber (number) {
 	}
 }
 
-
 function updateBadge() {
     let now = Date.now();
-    console.log(enddate < now, enddate);
+    //console.log(enddate < now, enddate);
 
     if(enddate < 0 || isNaN(enddate) || enddate < now){
+        browser.browserAction.setTitle({
+            title: "Name:" + enddatename + "\nDatetime: " + enddatestr
+        });
         browser.browserAction.setBadgeText({ text: "" });
         browser.browserAction.setIcon({
             'imageData': getIconImageData(0)
@@ -86,7 +87,6 @@ function updateBadge() {
         return;
     }
 
-
     let diffsecs = enddate - now;
 
     let match = false;
@@ -94,21 +94,19 @@ function updateBadge() {
         const k = valarr[i];
         const v = value_postfix.get(k);
         const tmp = Math.floor(diffsecs/k);
-        console.log('tmp', tmp);
+        //console.log('tmp', tmp);
         if(tmp > 0){
             browser.browserAction.setBadgeText({ text: v});
             clearTimeout(tid);
-            remain = now%k;
-            console.log('remain', remain);
-            if(remain !== 0){
+            let remain = now%k;
+            if(remain > 1000){
                 tid = setTimeout(updateBadge,remain);
             }else{
-                const wait = ((tmp > 1) ? k : ((i < valarr.length-1)? valarry[i+1]:k))
-                console.log('wait', wait);
+                const wait = ((tmp > 1) ? k : ((i < valarr.length-1)? valarr[i+1]:k))
                 tid = setTimeout(updateBadge, wait );
             }
             browser.browserAction.setTitle({
-                title: "Name:" + enddatename + "\nEndtime: " + enddatestr
+                title: "Name:" + enddatename + "\nDatetime: " + enddatestr
             });
             browser.browserAction.setIcon({
                 'imageData': getIconImageData(tmp)
@@ -160,7 +158,6 @@ function getIconImageData(rank) {
 onStorageChanged();
 browser.storage.onChanged.addListener(onStorageChanged);
 
-//setInterval(updateBadge, 1000);
 updateBadge();
 
 browser.browserAction.setBadgeBackgroundColor({ color: '#fff00050' });
